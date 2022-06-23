@@ -139,6 +139,7 @@ def edit(request, document_id):
 
     if request.method == 'POST':
         original_file = doc.file
+        original_file_name = doc.file.name
         form = DocumentForm(request.POST, request.FILES, instance=doc, user=request.user)
         if form.is_valid():
             if 'file' in form.changed_data:
@@ -155,7 +156,10 @@ def edit(request, document_id):
                 # If providing a new document file, delete the old one.
                 # NB Doing this via original_file.delete() clears the file field,
                 # which definitely isn't what we want...
-                original_file.storage.delete(original_file.name)
+
+                # Fix deleting the new file when they have the same name
+                if not original_file_name == doc.file.name:
+                    original_file.storage.delete(original_file.name)
             else:
                 doc = form.save()
 
